@@ -6,10 +6,19 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
+// Force-enable Nitro so self-hosted builds (Vercel, Render, Netlify, Node)
+// produce a real SSR server. Without this, builds outside the Lovable sandbox
+// emit only static client assets and every route 404s in production.
+// Preset auto-detection still applies:
+//   - Vercel sets NITRO_PRESET=vercel automatically
+//   - Netlify sets NITRO_PRESET=netlify automatically
+//   - Render / generic Node: set NITRO_PRESET=node-server in the environment
+//     (render.yaml does this and runs `node dist/server/index.mjs`)
 export default defineConfig({
   tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
     server: { entry: "server" },
+  },
+  nitro: {
+    preset: process.env.NITRO_PRESET || "node-server",
   },
 });
